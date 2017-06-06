@@ -1,0 +1,73 @@
+create schema t1;
+create schema t2;
+create schema temp1;
+
+create table temp1.person
+( netid varchar2(50),
+  last_name varchar2(50),
+  first_name varchar2(50) 
+);
+create table t1.person
+( netid varchar2(50),
+  last_name varchar2(50),
+  first_name varchar2(50) 
+);
+create table t2.person
+( effective_date TIMESTAMP_LTZ(9),
+  expiration_date TIMESTAMP_LTZ(9),
+  netid varchar2(50),
+  last_name varchar2(50),
+  first_name varchar2(50) 
+);
+
+insert into temp1.person ( netid,last_name,first_name) values ('CMILLAR','Kleber','Caela');
+insert into temp1.person ( netid,last_name,first_name) values ('JDOSMANN','Dosmann','Joel');
+insert into temp1.person ( netid,last_name,first_name) values ('JLANGAGE','Langager','Jessica');
+insert into temp1.person ( netid,last_name,first_name) values ('MBENNITT','Bennitt','Mark');
+insert into temp1.person ( netid,last_name,first_name) values ('PMILLE17','Miller','Paul');
+
+insert into t1.person ( netid,last_name,first_name) values ('CMILLAR','Kleber','Caela');
+insert into t1.person ( netid,last_name,first_name) values ('JDOSMANN','Dosmann','Joel');
+insert into t1.person ( netid,last_name,first_name) values ('JLANGAGE','Langager','Jessica');
+insert into t1.person ( netid,last_name,first_name) values ('MBENNITT','Bennitt','Mark');
+insert into t1.person ( netid,last_name,first_name) values ('PMILLE17','Miller','Paul');
+
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name) values ('1/1/2010','12/31/2099','CMILLAR','Kleber','Caela');
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name) values ('1/1/2010','12/31/2099','JDOSMANN','Dosmann','Joel');
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name) values ('1/1/2010','12/31/2099','JLANGAGE','Langager','Jessica');
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name) values ('1/1/2010','12/31/2099','MBENNITT','Bennitt','Mark');
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name) values ('1/1/2010','12/31/2099','PMILLE17','Miller','Paul');
+
+--Run for new records
+insert into t2.person ( effective_date, expiration_date, netid,last_name,first_name)
+select current_date, '12/31/2099', netid, last_name, first_name
+from temp1.person temp1
+where not exists (select 1 from t2.person t2 where t2.netid = temp1.netid)
+
+
+--Run for deleted records
+UPDATE t2.person t2
+SET expiration_date = current_date
+where expiration_date = '12/31/2099'
+and not exists (select 1 from temp1.person temp1 where t2.netid = temp1.netid)
+
+
+--Deactivate records
+update t2.person t2 set t2.expiration_date = current_timestam
+from (SELECT
+SS.netid, SS.last_name, SS.first_name from temp1.person ss
+EXCEPT
+SELECT 
+T2.netid, T2.last_name, T2.first_name from t2.person t2) b
+where t2.netid = b.netid
+
+-Insert new records
+insert into t2.person (effective_date, expiration_date, netid, last_name, first_name)
+select dateadd(minute,1,current_timestamp), '12/31/2099', b.netid, b.last_name, b.first_name
+from (SELECT
+SS.netid, SS.last_name, SS.first_name from temp1.person ss
+EXCEPT
+SELECT 
+T2.netid, T2.last_name, T2.first_name from t2.person t2) b
+
+
