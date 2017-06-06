@@ -1,6 +1,5 @@
-
-
 create schema t900;
+
 create schema t2;
 create schema temp1;
 
