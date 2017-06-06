@@ -1,6 +1,6 @@
 
 
-create schema t1;
+create schema t900;
 create schema t2;
 create schema temp1;
 
@@ -12,7 +12,7 @@ create table temp1.person
 create table t1.person
 ( netid varchar2(50),
   last_name varchar2(50),
-  first_name varchar2(50) 
+  first_name varchar2(50)
 );
 create table t2.personnnnnnnn
 
